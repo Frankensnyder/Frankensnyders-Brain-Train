@@ -42,9 +42,16 @@ export function initLearn(store) {
       return;
     }
     flipped = false;
+    // Fehler #2: Ohne dies animiert die CSS-Flip-Transition beim Kartenwechsel von der
+    // (franzoesischen) Rueckseite zurueck zur Vorderseite, wodurch die neue Karte kurz in
+    // Franzoesisch aufblitzt. Transition kurz deaktivieren, Klasse entfernen, Reflow erzwingen,
+    // erst danach die Transition wieder freigeben -> die neue Karte erscheint sofort in Deutsch.
+    flashcard.classList.add('no-transition');
     flashcard.classList.remove('flipped');
     frontText.textContent = card.front;
     backText.textContent = card.back;
+    void inner.offsetHeight; // Reflow erzwingen
+    flashcard.classList.remove('no-transition');
     const color = boxColor(card.box);
     flashcard.querySelector('.flashcard-front').style.background = color;
     flashcard.querySelector('.flashcard-back').style.background = color;
@@ -77,8 +84,9 @@ export function initLearn(store) {
 
   function answer(correct) {
     if (!currentId) return;
-    // Anforderung: bei beiden Wisch-Richtungen leuchtet die Karte kurz gruen auf.
-    flash('correct');
+    // Fehler #3: Rahmenfarbe muss die tatsaechliche Bewertung widerspiegeln –
+    // gruen bei richtig, rot bei falsch (vorher war hier "correct" hartkodiert).
+    flash(correct ? 'correct' : 'wrong');
     store.answerCard(currentId, correct);
     resetDrag();
     setTimeout(nextCard, 220);

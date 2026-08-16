@@ -46,7 +46,7 @@ export function initHome(store, { onGoToLearn }) {
         <span class="box-progress-swatch" style="background:${b.color}"></span>
         <span class="box-progress-label">Box ${b.box}</span>
         <span class="box-progress-track"><span class="box-progress-fill" style="width:${pct}%;background:${b.color}"></span></span>
-        <span class="box-progress-count">${count}</span>
+        <span class="box-progress-count">${count} <span class="box-progress-pct">(${pct}%)</span></span>
       `;
       boxList.appendChild(row);
     });

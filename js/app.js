@@ -28,6 +28,16 @@ screens.stats = initStats(store);
 
 showScreen('home');
 
+// --- Erweiterung #6: animierter Splash-Screen fuer ca. 2 Sekunden beim App-Start,
+//     danach automatisch (weil bereits im Hintergrund gerendert) der Home-Bildschirm. ---
+const splash = document.getElementById('splash-screen');
+if (splash) {
+  setTimeout(() => {
+    splash.classList.add('splash-hide');
+    setTimeout(() => splash.remove(), 400);
+  }, 1600);
+}
+
 // --- PWA: Service Worker fuer Offline-Betrieb registrieren ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
