@@ -62,7 +62,7 @@ export function initAdd(store) {
     }
     const pairs = parseVocabCsv(text);
     if (pairs.length === 0) {
-      showFeedback(csvFeedback, 'Keine gültigen Zeilen gefunden. Format: Deutsch;Französisch', false);
+      showFeedback(csvFeedback, 'Keine gültigen Zeilen gefunden. Format: Deutsch;Fremdsprache', false);
       return;
     }
     store.importCards(pairs);
