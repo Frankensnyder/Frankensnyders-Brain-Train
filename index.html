@@ -86,10 +86,13 @@
             <div class="flashcard-face flashcard-back">
               <span class="lang-tag" id="card-back-lang-tag">FR</span>
               <span id="card-back-text" class="card-text"></span>
-              <!-- Erweiterung 18.08. #2: Sprachausgabe – nur auf der Fremdsprachen-Seite sichtbar -->
-              <button id="btn-speak-card" class="speak-btn" aria-label="Fremdsprache vorlesen" title="Vorlesen">🔊</button>
             </div>
           </div>
+          <!-- Erweiterung 18.08. #2: Sprachausgabe – Button liegt bewusst AUSSERHALB der
+               3D-gedrehten .flashcard-inner (iOS Safari trifft Buttons auf rotierten
+               Flaechen sonst nicht zuverlaessig) und wird per CSS nur eingeblendet,
+               wenn die Fremdsprachen-Seite sichtbar ist (.flipped). -->
+          <button id="btn-speak-card" class="speak-btn" aria-label="Fremdsprache vorlesen" title="Vorlesen">🔊</button>
         </div>
         <p class="hint">Zum Umdrehen antippen · Wischen, Buttons oder Pfeiltasten zum Bewerten</p>
       </div>

@@ -288,26 +288,31 @@ html, body {
 .card-text { font-size: 24px; font-weight: 700; word-break: normal; overflow-wrap: normal; hyphens: none; }
 
 /* Erweiterung 18.08. #2: Lautsprecher auf der Fremdsprachen-Seite der Lernkarte.
-   Der Button liegt auf der Rueckseite (backface) und wird zusaetzlich per
-   .flipped-Regel ausgeblendet/deaktiviert, solange die deutsche Seite sichtbar ist. */
+   Der Button liegt als Overlay UEBER der Karte (nicht in der 3D-gedrehten Flaeche,
+   da iOS Safari Klicks auf rotierten Elementen unzuverlaessig trifft) und ist nur
+   sichtbar/klickbar, wenn die Fremdsprachen-Seite angezeigt wird (.flipped). */
 .speak-btn {
   position: absolute;
   bottom: 12px;
   right: 14px;
+  z-index: 5;
   border: none;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
   border-radius: 999px;
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
+  width: 44px;
+  height: 44px;
+  font-size: 19px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  visibility: hidden;
+  pointer-events: none;
 }
-.flashcard:not(.flipped) .speak-btn { visibility: hidden; pointer-events: none; }
-.speak-btn.speaking { background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 3px rgba(255,255,255,0.4); }
+.flashcard.flipped .speak-btn { visibility: visible; pointer-events: auto; }
+.speak-btn.speaking { background: rgba(255, 255, 255, 0.6); box-shadow: 0 0 0 3px rgba(255,255,255,0.4); }
 
 .hint { font-size: 12px; color: var(--ink-muted); margin-top: 14px; text-align: center; }
 
