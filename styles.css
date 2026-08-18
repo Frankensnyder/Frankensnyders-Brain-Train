@@ -55,6 +55,61 @@ html, body {
   text-align: center;
 }
 
+/* ---------- Erweiterung 18.08. #1: Zahnrad + Einstellungsdialog ---------- */
+.settings-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 16px);
+  right: 14px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  padding: 6px;
+  cursor: pointer;
+}
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.settings-dialog {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+.settings-dialog h2 { margin: 0 0 12px; font-size: 17px; }
+.settings-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  margin: 0 0 8px;
+}
+.settings-languages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.settings-language-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.settings-language-option input { margin: 0; }
+
 #app {
   max-width: 560px;
   margin: 0 auto;
@@ -232,6 +287,28 @@ html, body {
 }
 .card-text { font-size: 24px; font-weight: 700; word-break: normal; overflow-wrap: normal; hyphens: none; }
 
+/* Erweiterung 18.08. #2: Lautsprecher auf der Fremdsprachen-Seite der Lernkarte.
+   Der Button liegt auf der Rueckseite (backface) und wird zusaetzlich per
+   .flipped-Regel ausgeblendet/deaktiviert, solange die deutsche Seite sichtbar ist. */
+.speak-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flashcard:not(.flipped) .speak-btn { visibility: hidden; pointer-events: none; }
+.speak-btn.speaking { background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 3px rgba(255,255,255,0.4); }
+
 .hint { font-size: 12px; color: var(--ink-muted); margin-top: 14px; text-align: center; }
 
 .learn-actions {
@@ -353,7 +430,16 @@ thead th {
   cursor: pointer;
   white-space: nowrap;
 }
-tbody td { padding: 9px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+/* Aenderung 18.08. #4: Zeilenhoehe nur so hoch wie noetig – kompakteres Padding,
+   Textspalten brechen weiterhin bei langen Texten um. */
+tbody td { padding: 5px 6px; border-bottom: 1px solid var(--border); vertical-align: middle; line-height: 1.3; }
+/* Aenderung 18.08. #4: Aktions-Icons nebeneinander statt uebereinander. */
+.actions-cell { white-space: nowrap; }
+.actions-cell .row-btn { display: inline-block; }
+/* Erweiterung 18.08. #3 (Alternative 1): Lautsprecher direkt hinter dem Fremdsprachen-Text. */
+.back-cell { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.back-cell .row-btn.speak { padding: 2px 4px; font-size: 14px; }
+.row-btn.speak.speaking { color: var(--accent); }
 .box-chip {
   display: inline-block;
   min-width: 20px;
