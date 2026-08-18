@@ -1,5 +1,7 @@
 // screens/learn.js
 import { isDue, boxColor } from '../leitner.js';
+import { toggleSpeech, stopSpeech, isSpeechAvailable } from '../speech.js';
+import { getForeignLanguage, subscribe as subscribeSettings } from '../settings.js';
 
 const SWIPE_THRESHOLD = 80;
 
@@ -14,6 +16,8 @@ export function initLearn(store) {
   const btnWrong = document.getElementById('btn-wrong');
   const btnCorrect = document.getElementById('btn-correct');
   const emptyText = emptyEl.querySelector('p');
+  const btnSpeak = document.getElementById('btn-speak-card');
+  const backLangTag = document.getElementById('card-back-lang-tag');
 
   let queue = [];
   let sessionTotal = 0;
@@ -42,6 +46,8 @@ export function initLearn(store) {
       return;
     }
     flipped = false;
+    stopSpeech(); // Erweiterung 18.08. #2: Wiedergabe endet beim Kartenwechsel
+    backLangTag.textContent = getForeignLanguage().tag;
     // Fehler #2: Ohne dies animiert die CSS-Flip-Transition beim Kartenwechsel von der
     // (franzoesischen) Rueckseite zurueck zur Vorderseite, wodurch die neue Karte kurz in
     // Franzoesisch aufblitzt. Transition kurz deaktivieren, Klasse entfernen, Reflow erzwingen,
@@ -87,6 +93,7 @@ export function initLearn(store) {
     // Fehler #3: Rahmenfarbe muss die tatsaechliche Bewertung widerspiegeln –
     // gruen bei richtig, rot bei falsch (vorher war hier "correct" hartkodiert).
     flash(correct ? 'correct' : 'wrong');
+    stopSpeech();
     store.answerCard(currentId, correct);
     resetDrag();
     setTimeout(nextCard, 220);
@@ -104,6 +111,26 @@ export function initLearn(store) {
     if (dragging) return;
     flipped = !flipped;
     flashcard.classList.toggle('flipped', flipped);
+    // Wird zur deutschen Seite zurückgedreht, ist der Lautsprecher nicht mehr
+    // sichtbar – eine evtl. laufende Wiedergabe wird beendet.
+    if (!flipped) stopSpeech();
+  });
+
+  // --- Erweiterung 18.08. #2: Sprachausgabe der Fremdsprache (Web Speech) ---
+  // Der Button liegt auf der Rückseite der Karte und ist damit nur sichtbar,
+  // wenn die Fremdsprachen-Seite angezeigt wird. Tipp = abspielen, erneuter
+  // Tipp = Wiedergabe abschalten.
+  if (!isSpeechAvailable()) {
+    btnSpeak.classList.add('hidden');
+  }
+  btnSpeak.addEventListener('click', (e) => {
+    e.stopPropagation(); // darf die Karte nicht umdrehen
+    const card = currentCard();
+    if (!card) return;
+    const started = toggleSpeech(card.back, `learn:${card.id}`, () => {
+      btnSpeak.classList.remove('speaking');
+    });
+    btnSpeak.classList.toggle('speaking', started);
   });
   flashcard.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -149,6 +176,11 @@ export function initLearn(store) {
     buildQueue();
     nextCard();
   }
+
+  // Sprach-Tag (z. B. FR/EN) sofort anpassen, wenn die Fremdsprache geändert wird.
+  subscribeSettings(() => {
+    backLangTag.textContent = getForeignLanguage().tag;
+  });
 
   return { render };
 }

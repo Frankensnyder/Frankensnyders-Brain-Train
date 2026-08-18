@@ -1,5 +1,6 @@
 // screens/overview.js
 import { boxColor } from '../leitner.js';
+import { toggleSpeech, stopSpeech, isSpeechAvailable } from '../speech.js';
 
 export function initOverview(store) {
   const searchInput = document.getElementById('search-input');
@@ -75,7 +76,7 @@ export function initOverview(store) {
         <td><span class="box-chip" style="background:${boxColor(card.box)}">${card.box}</span></td>
         <td>${fmtDate(card.nextReview)}</td>
         <td>${card.repetitions || 0}</td>
-        <td>
+        <td class="actions-cell">
           <button class="row-btn save" title="Speichern">💾</button>
           <button class="row-btn cancel" title="Abbrechen">✖</button>
         </td>
@@ -92,17 +93,31 @@ export function initOverview(store) {
         render();
       });
     } else {
+      // Erweiterung 18.08. #3 (Alternative 1): Lautsprecher-Icon direkt hinter dem
+      // Fremdsprachen-Text jeder Zeile. Tipp = vorlesen, erneuter Tipp = stoppen.
+      const speakBtnHtml = isSpeechAvailable()
+        ? `<button class="row-btn speak" title="Vorlesen" aria-label="Fremdsprache vorlesen">🔊</button>`
+        : '';
       tr.innerHTML = `
         <td>${escapeHtml(card.front)}</td>
-        <td>${escapeHtml(card.back)}</td>
+        <td><span class="back-cell">${escapeHtml(card.back)}${speakBtnHtml}</span></td>
         <td><span class="box-chip" style="background:${boxColor(card.box)}">${card.box}</span></td>
         <td>${fmtDate(card.nextReview)}</td>
         <td>${card.repetitions || 0}</td>
-        <td>
+        <td class="actions-cell">
           <button class="row-btn edit" title="Bearbeiten">✎</button>
           <button class="row-btn delete" title="Löschen">🗑</button>
         </td>
       `;
+      const speakBtn = tr.querySelector('.speak');
+      if (speakBtn) {
+        speakBtn.addEventListener('click', () => {
+          const started = toggleSpeech(card.back, `overview:${card.id}`, () => {
+            speakBtn.classList.remove('speaking');
+          });
+          speakBtn.classList.toggle('speaking', started);
+        });
+      }
       tr.querySelector('.edit').addEventListener('click', () => {
         editingId = card.id;
         render();
@@ -124,6 +139,9 @@ export function initOverview(store) {
   }
 
   function render() {
+    // Beim Neuaufbau der Tabelle werden die Lautsprecher-Buttons ersetzt –
+    // eine evtl. laufende Wiedergabe daher sauber beenden.
+    stopSpeech();
     const cards = store.getCards().filter(matchesFilters);
     cards.sort((a, b) => {
       let av = a[sortKey];
