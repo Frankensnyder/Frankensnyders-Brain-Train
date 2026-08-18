@@ -107,8 +107,11 @@ export function initLearn(store) {
     inner.style.opacity = '';
   }
 
-  flashcard.addEventListener('click', () => {
+  flashcard.addEventListener('click', (e) => {
     if (dragging) return;
+    // Ein Tipp auf den Lautsprecher darf die Karte NICHT umdrehen –
+    // doppelt abgesichert (stopPropagation am Button + Ziel-Prüfung hier).
+    if (e.target.closest('.speak-btn')) return;
     flipped = !flipped;
     flashcard.classList.toggle('flipped', flipped);
     // Wird zur deutschen Seite zurückgedreht, ist der Lautsprecher nicht mehr
@@ -117,14 +120,19 @@ export function initLearn(store) {
   });
 
   // --- Erweiterung 18.08. #2: Sprachausgabe der Fremdsprache (Web Speech) ---
-  // Der Button liegt auf der Rückseite der Karte und ist damit nur sichtbar,
-  // wenn die Fremdsprachen-Seite angezeigt wird. Tipp = abspielen, erneuter
+  // Der Button liegt als Overlay über der Karte (außerhalb der 3D-gedrehten
+  // Fläche, siehe index.html) und ist per CSS nur sichtbar, wenn die
+  // Fremdsprachen-Seite angezeigt wird. Tipp = abspielen, erneuter
   // Tipp = Wiedergabe abschalten.
   if (!isSpeechAvailable()) {
     btnSpeak.classList.add('hidden');
   }
+  ['touchstart', 'touchend'].forEach((type) => {
+    btnSpeak.addEventListener(type, (e) => e.stopPropagation(), { passive: true });
+  });
   btnSpeak.addEventListener('click', (e) => {
     e.stopPropagation(); // darf die Karte nicht umdrehen
+    e.preventDefault();
     const card = currentCard();
     if (!card) return;
     const started = toggleSpeech(card.back, `learn:${card.id}`, () => {
@@ -140,6 +148,8 @@ export function initLearn(store) {
   });
 
   flashcard.addEventListener('touchstart', (e) => {
+    // Berührungen auf dem Lautsprecher-Button gehören nicht zur Wisch-Geste.
+    if (e.target.closest('.speak-btn')) return;
     startX = e.touches[0].clientX;
     dragging = true;
     flashcard.classList.add('dragging');
