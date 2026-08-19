@@ -285,7 +285,23 @@ html, body {
   padding: 3px 8px;
   border-radius: 999px;
 }
-.card-text { font-size: 24px; font-weight: 700; word-break: normal; overflow-wrap: normal; hyphens: none; }
+/* Zeilenumbruch auf der Lernkarte:
+   - word-break/overflow-wrap/hyphens verhindern Umbrueche INNERHALB eines Wortes (Fix 17.08.).
+   - display:block + width:100% ist noetig, damit iOS Safari den Text ueberhaupt an der
+     Kartenbreite umbricht: Als Flex-Item ohne explizite Breite gibt WebKit dem Text sonst
+     seine volle Inhaltsbreite und laesst lange Saetze ueber den Kartenrand hinauslaufen,
+     statt zwischen den Woertern umzubrechen (Fix 18.08.). Chromium begrenzte hier
+     automatisch, daher fiel das nur auf dem iPhone auf. */
+.card-text {
+  display: block;
+  width: 100%;
+  font-size: 24px;
+  font-weight: 700;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  white-space: normal;
+}
 
 /* Erweiterung 18.08. #2: Lautsprecher auf der Fremdsprachen-Seite der Lernkarte.
    Der Button liegt als Overlay UEBER der Karte (nicht in der 3D-gedrehten Flaeche,
