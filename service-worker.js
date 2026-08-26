@@ -1,5 +1,5 @@
 // service-worker.js — macht die App nach dem ersten Laden vollständig offline nutzbar.
-const CACHE_NAME = 'brain-train-cache-v4';
+const CACHE_NAME = 'brain-train-cache-v5';
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -12,6 +12,9 @@ const PRECACHE_URLS = [
   './js/speech.js',
   './js/leitner.js',
   './js/charts.js',
+  './js/version.js',
+  './js/text-utils.js',
+  './js/translate.js',
   './js/screens/home.js',
   './js/screens/learn.js',
   './js/screens/add.js',
