@@ -20,6 +20,7 @@
   <div class="splash-logo">
     <span class="splash-line">Frankensnyder's</span>
     <span class="splash-line splash-line-strong">Brain Train</span>
+    <span class="splash-version" id="splash-version"></span>
   </div>
 </div>
 
@@ -32,9 +33,22 @@
 <div id="settings-overlay" class="settings-overlay hidden">
   <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
     <h2 id="settings-title">Einstellungen</h2>
+    <!-- Erweiterung 26.08. #4: Versionsnummer im Einstellungsdialog -->
+    <p class="settings-version" id="settings-version"></p>
     <p class="settings-label">Fremdsprache</p>
     <div id="settings-languages" class="settings-languages"></div>
+    <!-- Erweiterung 26.08. #5: Info-Dialog zum Leitner-Konzept -->
+    <button id="btn-leitner-info" class="secondary-btn leitner-info-btn" type="button">ℹ️ Wie funktioniert das Leitner-System?</button>
     <button id="btn-settings-close" class="primary-btn">Schließen</button>
+  </div>
+</div>
+
+<!-- Erweiterung 26.08. #5: Info-Dialog "Leitner-System erklärt" -->
+<div id="leitner-info-overlay" class="settings-overlay hidden">
+  <div class="settings-dialog leitner-info-dialog" role="dialog" aria-modal="true" aria-labelledby="leitner-info-title">
+    <h2 id="leitner-info-title">Das Leitner-System</h2>
+    <div id="leitner-info-content" class="leitner-info-content"></div>
+    <button id="btn-leitner-info-close" class="primary-btn">Schließen</button>
   </div>
 </div>
 
@@ -74,6 +88,16 @@
     </div>
 
     <div id="learn-active" class="learn-active hidden">
+      <!-- Erweiterung 26.08. #6: Toggle "Immer vorlesen" – liest die Fremdsprache
+           automatisch vor, sobald die Karte umgedreht wird. Deutsch wird nie vorgelesen. -->
+      <div class="learn-toggle-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="toggle-auto-speak" />
+          <span class="toggle-slider" aria-hidden="true"></span>
+        </label>
+        <span class="toggle-label">🔊 Fremdsprache beim Umdrehen immer vorlesen</span>
+      </div>
+
       <div class="learn-progress" id="learn-progress"></div>
 
       <div class="card-stage">
@@ -121,8 +145,13 @@
           <input type="text" id="input-front" required placeholder="z. B. das Haus" />
         </label>
         <label>Fremdsprache
-          <input type="text" id="input-back" required placeholder="z. B. la maison" />
+          <div class="input-with-action">
+            <input type="text" id="input-back" required placeholder="z. B. la maison" />
+            <!-- Erweiterung 26.08. #2: Automatische Übersetzung Deutsch → Fremdsprache -->
+            <button type="button" id="btn-translate" class="translate-btn" title="Automatisch übersetzen">🌐</button>
+          </div>
         </label>
+        <p class="hint-block translate-hint">🌐 Automatische Übersetzung erfordert eine Internetverbindung.</p>
         <button type="submit" class="primary-btn">Vokabel hinzufügen</button>
       </form>
       <p id="manual-feedback" class="feedback hidden"></p>
