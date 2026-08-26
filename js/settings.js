@@ -15,6 +15,8 @@ const DEFAULTS = {
   // Die App wurde ursprünglich für Deutsch <-> Französisch gebaut,
   // daher bleibt Französisch die Voreinstellung.
   foreignLanguage: 'fr',
+  // Erweiterung 26.08. #6: "Immer vorlesen" im Lernen-Screen, standardmäßig aus.
+  autoSpeak: false,
 };
 
 const listeners = [];
@@ -51,6 +53,20 @@ export function setForeignLanguage(code) {
   if (!LANGUAGES.some((l) => l.code === code)) return;
   if (settings.foreignLanguage === code) return;
   settings = { ...settings, foreignLanguage: code };
+  persist();
+  notify();
+}
+
+// Erweiterung 26.08. #6: "Immer vorlesen" – liest die Fremdsprache automatisch vor,
+// sobald die Lernkarte umgedreht wird (Deutsch wird nie automatisch vorgelesen).
+export function getAutoSpeak() {
+  return !!settings.autoSpeak;
+}
+
+export function setAutoSpeak(value) {
+  const next = !!value;
+  if (settings.autoSpeak === next) return;
+  settings = { ...settings, autoSpeak: next };
   persist();
   notify();
 }

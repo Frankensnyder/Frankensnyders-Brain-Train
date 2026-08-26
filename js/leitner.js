@@ -1,6 +1,8 @@
 // leitner.js
 // Zentrale Leitner-Logik: Boxen, Intervalle, Farben, nextReview-Berechnung, Transitions.
 
+import { normalizeVocabText } from './text-utils.js';
+
 export const BOXES = [
   { box: 1, days: 1, color: '#FF6B6B', label: 'Neue / falsch beantwortete Karten' },
   { box: 2, days: 2, color: '#FF9F43', label: 'In Lernfortschritt' },
@@ -84,8 +86,11 @@ export function newCard(front, back, now = new Date()) {
   const iso = now.toISOString();
   return {
     id: `${now.getTime()}-${Math.floor(Math.random() * 100000)}`,
-    front,
-    back,
+    // Fehler 26.08. #1: Geschützte/unsichtbare Leerzeichen-Varianten schon beim
+    // Anlegen in normale Leerzeichen umwandeln, damit der Zeilenumbruch auf der
+    // Lernkarte zuverlässig funktioniert (siehe text-utils.js).
+    front: normalizeVocabText(front),
+    back: normalizeVocabText(back),
     box: 1,
     nextReview: computeNextReview(1, now),
     createdAt: iso,
