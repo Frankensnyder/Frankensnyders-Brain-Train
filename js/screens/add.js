@@ -1,5 +1,7 @@
 // screens/add.js
 import { parseVocabCsv } from '../storage.js';
+import { translateText, isOnline } from '../translate.js';
+import { getForeignLanguage } from '../settings.js';
 
 export function initAdd(store) {
   const tabBtns = document.querySelectorAll('#screen-add .tab-btn');
@@ -11,6 +13,7 @@ export function initAdd(store) {
   const inputFront = document.getElementById('input-front');
   const inputBack = document.getElementById('input-back');
   const manualFeedback = document.getElementById('manual-feedback');
+  const btnTranslate = document.getElementById('btn-translate');
 
   const csvTextarea = document.getElementById('csv-input');
   const csvFileInput = document.getElementById('csv-file');
@@ -32,6 +35,42 @@ export function initAdd(store) {
     el.classList.add(ok ? 'success' : 'error');
     setTimeout(() => el.classList.add('hidden'), 4000);
   }
+
+  // --- Erweiterung 26.08. #2: Automatische Übersetzung Deutsch → Fremdsprache ---
+  // Der Button ist nur aktiv, wenn das Gerät online ist (dezenter Hinweistext
+  // erklärt das dauerhaft unter dem Feld). manuelle Eingabe bleibt weiterhin
+  // jederzeit möglich – die Übersetzung ist nur eine optionale Hilfe.
+  function updateTranslateAvailability() {
+    btnTranslate.disabled = !isOnline();
+    btnTranslate.title = isOnline()
+      ? 'Automatisch übersetzen'
+      : 'Offline nicht verfügbar – Internetverbindung nötig';
+  }
+  updateTranslateAvailability();
+  window.addEventListener('online', updateTranslateAvailability);
+  window.addEventListener('offline', updateTranslateAvailability);
+
+  btnTranslate.addEventListener('click', async () => {
+    const front = inputFront.value.trim();
+    if (!front) {
+      showFeedback(manualFeedback, 'Bitte zuerst ein deutsches Wort eingeben.', false);
+      inputFront.focus();
+      return;
+    }
+    btnTranslate.disabled = true;
+    btnTranslate.classList.add('translating');
+    try {
+      const targetLang = getForeignLanguage().code;
+      const translated = await translateText(front, 'de', targetLang);
+      inputBack.value = translated;
+      inputBack.focus();
+    } catch (err) {
+      showFeedback(manualFeedback, err.message || 'Übersetzung fehlgeschlagen.', false);
+    } finally {
+      btnTranslate.classList.remove('translating');
+      updateTranslateAvailability();
+    }
+  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();

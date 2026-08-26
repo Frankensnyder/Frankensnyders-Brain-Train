@@ -1,7 +1,8 @@
 // screens/learn.js
 import { isDue, boxColor } from '../leitner.js';
 import { toggleSpeech, stopSpeech, isSpeechAvailable } from '../speech.js';
-import { getForeignLanguage, subscribe as subscribeSettings } from '../settings.js';
+import { getForeignLanguage, getAutoSpeak, setAutoSpeak, subscribe as subscribeSettings } from '../settings.js';
+import { normalizeVocabText } from '../text-utils.js';
 
 const SWIPE_THRESHOLD = 80;
 
@@ -18,6 +19,7 @@ export function initLearn(store) {
   const emptyText = emptyEl.querySelector('p');
   const btnSpeak = document.getElementById('btn-speak-card');
   const backLangTag = document.getElementById('card-back-lang-tag');
+  const toggleAutoSpeak = document.getElementById('toggle-auto-speak');
 
   let queue = [];
   let sessionTotal = 0;
@@ -54,8 +56,11 @@ export function initLearn(store) {
     // erst danach die Transition wieder freigeben -> die neue Karte erscheint sofort in Deutsch.
     flashcard.classList.add('no-transition');
     flashcard.classList.remove('flipped');
-    frontText.textContent = card.front;
-    backText.textContent = card.back;
+    // Fehler 26.08. #1: normalizeVocabText() wandelt geschützte/unsichtbare
+    // Leerzeichen-Varianten aus bereits gespeicherten Karten in normale Leerzeichen
+    // um, damit der Zeilenumbruch auf der Karte zuverlässig funktioniert.
+    frontText.textContent = normalizeVocabText(card.front);
+    backText.textContent = normalizeVocabText(card.back);
     void inner.offsetHeight; // Reflow erzwingen
     flashcard.classList.remove('no-transition');
     const color = boxColor(card.box);
@@ -114,9 +119,17 @@ export function initLearn(store) {
     if (e.target.closest('.speak-btn')) return;
     flipped = !flipped;
     flashcard.classList.toggle('flipped', flipped);
-    // Wird zur deutschen Seite zurückgedreht, ist der Lautsprecher nicht mehr
-    // sichtbar – eine evtl. laufende Wiedergabe wird beendet.
-    if (!flipped) stopSpeech();
+    if (flipped) {
+      // Erweiterung 26.08. #6: "Immer vorlesen" – sobald die Fremdsprachen-Seite
+      // erscheint, automatisch vorlesen (nur wenn die Einstellung aktiv ist). Die
+      // deutsche Seite wird davon nie betroffen, da dieser Zweig nur beim Umdrehen
+      // ZUR Fremdsprachen-Seite läuft.
+      if (getAutoSpeak() && isSpeechAvailable()) playCardSpeech();
+    } else {
+      // Wird zur deutschen Seite zurückgedreht, ist der Lautsprecher nicht mehr
+      // sichtbar – eine evtl. laufende Wiedergabe wird beendet.
+      stopSpeech();
+    }
   });
 
   // --- Erweiterung 18.08. #2: Sprachausgabe der Fremdsprache (Web Speech) ---
@@ -126,19 +139,37 @@ export function initLearn(store) {
   // Tipp = Wiedergabe abschalten.
   if (!isSpeechAvailable()) {
     btnSpeak.classList.add('hidden');
+    toggleAutoSpeak.disabled = true;
   }
+
+  // Gemeinsame Wiedergabe-Funktion für den manuellen Lautsprecher-Button (Erw.
+  // 18.08. #2) und die automatische Wiedergabe beim Umdrehen (Erw. 26.08. #6).
+  // Beide nutzen denselben Token, sodass ein Tipp auf den Button eine automatisch
+  // gestartete Wiedergabe wie gewohnt stoppen kann. Es wird ausschließlich
+  // card.back (Fremdsprache) vorgelesen – die deutsche Seite nie.
+  function playCardSpeech() {
+    const card = currentCard();
+    if (!card) return;
+    const started = toggleSpeech(normalizeVocabText(card.back), `learn:${card.id}`, () => {
+      btnSpeak.classList.remove('speaking');
+    });
+    btnSpeak.classList.toggle('speaking', started);
+  }
+
   ['touchstart', 'touchend'].forEach((type) => {
     btnSpeak.addEventListener(type, (e) => e.stopPropagation(), { passive: true });
   });
   btnSpeak.addEventListener('click', (e) => {
     e.stopPropagation(); // darf die Karte nicht umdrehen
     e.preventDefault();
-    const card = currentCard();
-    if (!card) return;
-    const started = toggleSpeech(card.back, `learn:${card.id}`, () => {
-      btnSpeak.classList.remove('speaking');
-    });
-    btnSpeak.classList.toggle('speaking', started);
+    playCardSpeech();
+  });
+
+  // Erweiterung 26.08. #6: Toggle "Immer vorlesen" – Zustand aus den Einstellungen
+  // laden/speichern (persistiert wie die Sprachauswahl in localStorage).
+  toggleAutoSpeak.checked = getAutoSpeak();
+  toggleAutoSpeak.addEventListener('change', () => {
+    setAutoSpeak(toggleAutoSpeak.checked);
   });
   flashcard.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {

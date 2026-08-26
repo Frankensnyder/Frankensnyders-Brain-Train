@@ -1,6 +1,7 @@
 // screens/overview.js
 import { boxColor } from '../leitner.js';
 import { toggleSpeech, stopSpeech, isSpeechAvailable } from '../speech.js';
+import { normalizeVocabText } from '../text-utils.js';
 
 export function initOverview(store) {
   const searchInput = document.getElementById('search-input');
@@ -71,8 +72,8 @@ export function initOverview(store) {
 
     if (editingId === card.id) {
       tr.innerHTML = `
-        <td><input type="text" class="edit-front" value="${escapeAttr(card.front)}" /></td>
-        <td><input type="text" class="edit-back" value="${escapeAttr(card.back)}" /></td>
+        <td><input type="text" class="edit-front" value="${escapeAttr(normalizeVocabText(card.front))}" /></td>
+        <td><input type="text" class="edit-back" value="${escapeAttr(normalizeVocabText(card.back))}" /></td>
         <td><span class="box-chip" style="background:${boxColor(card.box)}">${card.box}</span></td>
         <td>${fmtDate(card.nextReview)}</td>
         <td>${card.repetitions || 0}</td>
@@ -82,8 +83,8 @@ export function initOverview(store) {
         </td>
       `;
       tr.querySelector('.save').addEventListener('click', () => {
-        const front = tr.querySelector('.edit-front').value.trim();
-        const back = tr.querySelector('.edit-back').value.trim();
+        const front = normalizeVocabText(tr.querySelector('.edit-front').value.trim());
+        const back = normalizeVocabText(tr.querySelector('.edit-back').value.trim());
         if (front && back) store.updateCard(card.id, { front, back });
         editingId = null;
         render();
@@ -98,9 +99,11 @@ export function initOverview(store) {
       const speakBtnHtml = isSpeechAvailable()
         ? `<button class="row-btn speak" title="Vorlesen" aria-label="Fremdsprache vorlesen">🔊</button>`
         : '';
+      // Fehler 26.08. #1: normalizeVocabText() sorgt auch hier dafür, dass bereits
+      // gespeicherte Karten mit geschützten Leerzeichen im Text korrekt umbrechen.
       tr.innerHTML = `
-        <td>${escapeHtml(card.front)}</td>
-        <td><span class="back-cell">${escapeHtml(card.back)}${speakBtnHtml}</span></td>
+        <td>${escapeHtml(normalizeVocabText(card.front))}</td>
+        <td><span class="back-cell">${escapeHtml(normalizeVocabText(card.back))}${speakBtnHtml}</span></td>
         <td><span class="box-chip" style="background:${boxColor(card.box)}">${card.box}</span></td>
         <td>${fmtDate(card.nextReview)}</td>
         <td>${card.repetitions || 0}</td>
