@@ -3,4 +3,4 @@
 // Start-Screen und im Einstellungsdialog). Einzige Stelle, die bei einem neuen
 // Release angepasst werden muss.
 
-export const APP_VERSION = 'V1.5';
+export const APP_VERSION = 'V1.6';

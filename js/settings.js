@@ -6,9 +6,13 @@ const SETTINGS_KEY = 'brainTrain.settings.v1';
 
 // Verfügbare Fremdsprachen. Laut Change Request erscheinen zuerst
 // "Englisch" und "Französisch"; weitere Sprachen können hier ergänzt werden.
+// 28.08.: "Spanisch" ergänzt – Sprachausgabe (Lernen + Übersicht), Sprach-Tag auf
+// der Lernkarte und die automatische Übersetzung folgen automatisch der Auswahl,
+// da alle drei über getForeignLanguage() auf diese Liste zugreifen.
 export const LANGUAGES = [
   { code: 'en', label: 'Englisch', tag: 'EN', speechLang: 'en-US' },
   { code: 'fr', label: 'Französisch', tag: 'FR', speechLang: 'fr-FR' },
+  { code: 'es', label: 'Spanisch', tag: 'ES', speechLang: 'es-ES' },
 ];
 
 const DEFAULTS = {
